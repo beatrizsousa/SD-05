@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import org.omg.CORBA.portable.InputStream;
 
@@ -31,8 +33,8 @@ public class Teste {
     private Socket client;
     private PrintWriter out;
     private String line;
-    
-    public Teste(){
+
+    public Teste() {
         listenSocket();
     }
 
@@ -52,36 +54,26 @@ public class Teste {
                 System.out.println("Client Accepted");
                 System.out.println("IP: " + client.getInetAddress().getHostAddress() + " Conectado");
 
-                DataInputStream in = new DataInputStream(new BufferedInputStream(client.getInputStream()));
-                char dataType = in.readChar();
-                System.out.println(in.readByte());
-                System.out.println(in.readChar());
-                int length = in.readInt();
-                if (dataType == 's') {
-                    byte[] messageByte = new byte[length];
-                    boolean end = false;
-                    StringBuilder dataString = new StringBuilder(length);
-                    int totalBytesRead = 0;
-                    while (!end) {
-                        int currentBytesRead = in.read(messageByte);
-                        totalBytesRead = currentBytesRead + totalBytesRead;
-                        if (totalBytesRead <= length) {
-                            dataString
-                                    .append(new String(messageByte, 0, currentBytesRead, StandardCharsets.UTF_8));
-                        } else {
-                            dataString
-                                    .append(new String(messageByte, 0, length - totalBytesRead + currentBytesRead,
-                                                    StandardCharsets.UTF_8));
-                        }
-                        if (dataString.length() >= length) {
-                            end = true;
-                        }
-                    }
-                    System.out.println(dataString);
-                }
+                BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                String output = br.readLine();
+
+                //
+                output = output.replace("[", "");
+                output = output.replace("]", "");
+                System.out.println(output);
+                System.out.println("chegou!");
+
+                String URL_MEDIA = "http://localhost:8080/PC01/webresources/generic/00000;" + output;
+                URL obj = new URL(URL_MEDIA);
+                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                con.setRequestMethod("GET");
+                int responseCode = con.getResponseCode();
+
             }
         } catch (Exception e) {
             System.out.println("erro 2");
         }
     }
+
+    
 }
